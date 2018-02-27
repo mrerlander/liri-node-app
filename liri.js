@@ -136,7 +136,7 @@ if (arg === "my-tweets") {
 }
 
 function log() {
-    fs.appendFile("log.txt", process.argv[2] + "\n" + process.argv[3] + "\n", function (err) {
+    fs.appendFile("log.txt", arg + "\n" + arg2 + "\n", function (err) {
         if (err) {
             console.log(err);
         }
