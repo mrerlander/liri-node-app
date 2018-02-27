@@ -57,15 +57,22 @@ if (arg === "my-tweets") {
     log();
 
     //format: spotify-this-song "song name here"
-    var song;
+    var song = "";
 
     //if no song display ace of base - the sign info
     if (!arg2) {
         song = "the sign ace of base";
     } else {
-        song = arg2;
-    }
+        for (var i = 3; i < process.argv.length; i++) {
 
+            if (i > 3) {
+                song += "+";
+            }
+
+            song += process.argv[i];
+        }
+    }
+    console.log(song);
     //code for displaying spotify song search results
     spotify.search({
         type: 'track',
@@ -98,13 +105,20 @@ if (arg === "my-tweets") {
     log();
 
     //format: movie-this "movie name here"
-    var movie;
+    var movie = "";
 
     //if no movie display Mr. Nobody info 
     if (!arg2) {
         movie = "Mr. Nobody";
     } else {
-        movie = arg2;
+        for (var i = 3; i < process.argv.length; i++) {
+
+            if (i > 3) {
+                movie += "+";
+            }
+
+            movie += process.argv[i];
+        }
     }
 
     //code for displaying movie info
