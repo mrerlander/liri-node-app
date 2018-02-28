@@ -131,7 +131,7 @@ function movie() {
     //code for displaying movie info
     request.get("http://www.omdbapi.com/?apikey=" + omdb.apikey + "&t=" + arg2, function (error, response, body) {
         var movieJSON = JSON.parse(body);
-console.log(movieJSON);
+
         function printMovie() {
             //show title, year, imdb rating, rotten tomatoes rating, country, language, plot, actors
             var title = movieJSON.Title + "\n";
