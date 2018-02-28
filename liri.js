@@ -85,7 +85,6 @@ function spotifySong() {
         arg2 += "+" + process.argv[i];
     }
 
-    console.log(arg2);
     //code for displaying spotify song search results
     spotify.search({
         type: 'track',
