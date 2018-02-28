@@ -10,24 +10,42 @@ var spotify = new Spotify(keys.spotify);
 var client = new Twitter(keys.twitter);
 var omdb = keys.omdb;
 
-var arg;
-var arg2;
+var arg1 = process.argv[2];
+var arg2 = process.argv[3];
 var stringArr = [];
 
 var dashes = "------------------ \n";
 
-if (process.argv[2] === "do-what-it-says") {
+function switchCase() {
+    switch (arg1) {
+        case "do-what-it-says":
+            file();
+            break;
+
+        case "my-tweets":
+            tweets();
+            break;
+
+        case "spotify-this-song":
+            spotifySong();
+            break;
+
+        case "movie-this":
+            movie()
+            break;
+    }
+}
+
+function file() {
     var fileText = fs.readFileSync("./random.txt");
     stringArr = fileText.toString().split(",");
 
-    arg = stringArr[0];
+    arg1 = stringArr[0];
     arg2 = stringArr[1];
-} else {
-    arg = process.argv[2];
-    arg2 = process.argv[3];
+    switchCase();
 }
 
-if (arg === "my-tweets") {
+function tweets() {
     log();
 
     //code for displaying tweets
@@ -52,31 +70,26 @@ if (arg === "my-tweets") {
             }
         });
     });
+}
 
-} else if (arg === "spotify-this-song") {
+function spotifySong() {
     log();
-
-    //format: spotify-this-song "song name here"
-    var song = "";
 
     //if no song display ace of base - the sign info
     if (!arg2) {
-        song = "the sign ace of base";
-    } else {
-        for (var i = 3; i < process.argv.length; i++) {
-
-            if (i > 3) {
-                song += "+";
-            }
-
-            song += process.argv[i];
-        }
+        arg2 = "the sign ace of base";
     }
-    console.log(song);
+
+    for (var i = 4; i < process.argv.length; i++) {
+
+        arg2 += "+" + process.argv[i];
+    }
+
+    console.log(arg2);
     //code for displaying spotify song search results
     spotify.search({
         type: 'track',
-        query: song,
+        query: arg2,
         limit: "1"
     }, function (err, data) {
         if (err) {
@@ -101,30 +114,25 @@ if (arg === "my-tweets") {
             }
         });
     });
-} else if (arg === "movie-this") {
-    log();
+}
 
-    //format: movie-this "movie name here"
-    var movie = "";
+function movie() {
+    log();
 
     //if no movie display Mr. Nobody info 
     if (!arg2) {
-        movie = "Mr. Nobody";
-    } else {
-        for (var i = 3; i < process.argv.length; i++) {
+        arg2 = "Mr. Nobody";
+    }
 
-            if (i > 3) {
-                movie += "+";
-            }
+    for (var i = 4; i < process.argv.length; i++) {
 
-            movie += process.argv[i];
-        }
+        arg2 += "+" + process.argv[i];
     }
 
     //code for displaying movie info
-    request.get("http://www.omdbapi.com/?apikey=" + omdb.apikey + "&t=" + movie, function (error, response, body) {
+    request.get("http://www.omdbapi.com/?apikey=" + omdb.apikey + "&t=" + arg2, function (error, response, body) {
         var movieJSON = JSON.parse(body);
-
+console.log(movieJSON);
         function printMovie() {
             //show title, year, imdb rating, rotten tomatoes rating, country, language, plot, actors
             var title = movieJSON.Title + "\n";
@@ -150,9 +158,11 @@ if (arg === "my-tweets") {
 }
 
 function log() {
-    fs.appendFile("log.txt", arg + "\n" + arg2 + "\n", function (err) {
+    fs.appendFile("log.txt", arg1 + "\n" + arg2 + "\n", function (err) {
         if (err) {
             console.log(err);
         }
     });
 }
+
+switchCase();
