@@ -3,6 +3,7 @@ require("dotenv").config();
 var keys = require("./keys.js");
 var Twitter = require("twitter");
 var request = require("request");
+var inquirer = require("inquirer");
 var Spotify = require("node-spotify-api");
 var fs = require("fs");
 
@@ -10,39 +11,59 @@ var spotify = new Spotify(keys.spotify);
 var client = new Twitter(keys.twitter);
 var omdb = keys.omdb;
 
-var arg1 = process.argv[2];
-var arg2 = process.argv[3];
+var arg1;
+var arg2;
 var stringArr = [];
-
+var value;
 var dashes = "------------------ \n";
 
-function switchCase() {
-    switch (arg1) {
-        case "do-what-it-says":
+inquirer.prompt([{
+    type: "list",
+    message: "What would you like to get?",
+    choices: ["Tweets", "Song info", "Movie info", "Whatever's in the file"],
+    name: "choice"
+}]).then(function (answer) {
+
+    switch (answer.choice) {
+        case "Whatever's in the file":
             file();
             break;
 
-        case "my-tweets":
+        case "Tweets":
+            arg1 = answer.choice;
             tweets();
             break;
 
-        case "spotify-this-song":
+        case "Song info":
+            arg1 = answer.choice;
             spotifySong();
             break;
 
-        case "movie-this":
+        case "Movie info":
+            arg1 = answer.choice;
             movie()
             break;
     }
-}
+});
 
 function file() {
-    var fileText = fs.readFileSync("./random.txt");
-    stringArr = fileText.toString().split(",");
+    fs.readFile("./random.txt", "utf8", function (err, response) {
+        stringArr = response.split(",");
 
-    arg1 = stringArr[0];
-    arg2 = stringArr[1];
-    switchCase();
+        arg1 = stringArr[0];
+        arg2 = stringArr[1];
+
+
+        switch (arg1) {
+            case "spotify-this-song":
+                spotifySong();
+                break;
+
+            case "movie-this":
+                movie();
+                break;
+        }
+    });
 }
 
 function tweets() {
@@ -73,22 +94,32 @@ function tweets() {
 }
 
 function spotifySong() {
-    log();
 
-    //if no song display ace of base - the sign info
     if (!arg2) {
-        arg2 = "the sign ace of base";
+        inquirer.prompt([{
+            type: "input",
+            message: "Input song title",
+            name: "song"
+        }]).then(function (song) {
+            arg2 = song.song;
+
+            log();
+
+            value = song.song;
+        });
+    } else {
+        value = arg2;
     }
 
-    for (var i = 4; i < process.argv.length; i++) {
-
-        arg2 += "+" + process.argv[i];
+    //if no song display ace of base - the sign info
+    if (value === "") {
+        value = "the sign ace of base";
     }
 
     //code for displaying spotify song search results
     spotify.search({
         type: 'track',
-        query: arg2,
+        query: value,
         limit: "1"
     }, function (err, data) {
         if (err) {
@@ -116,20 +147,30 @@ function spotifySong() {
 }
 
 function movie() {
-    log();
 
-    //if no movie display Mr. Nobody info 
     if (!arg2) {
-        arg2 = "Mr. Nobody";
+        inquirer.prompt([{
+            type: "input",
+            message: "Input movie title",
+            name: "movie"
+        }]).then(function (movie) {
+            arg2 = movie.movie;
+
+            log();
+
+            var value = movie.movie;
+        });
+    } else {
+        value = arg2;
     }
-
-    for (var i = 4; i < process.argv.length; i++) {
-
-        arg2 += "+" + process.argv[i];
+    
+    //if no movie display Mr. Nobody info
+    if (value === "") {
+        value = "Mr. Nobody";
     }
 
     //code for displaying movie info
-    request.get("http://www.omdbapi.com/?apikey=" + omdb.apikey + "&t=" + arg2, function (error, response, body) {
+    request.get("http://www.omdbapi.com/?apikey=" + omdb.apikey + "&t=" + value, function (error, response, body) {
         var movieJSON = JSON.parse(body);
 
         function printMovie() {
@@ -163,5 +204,3 @@ function log() {
         }
     });
 }
-
-switchCase();
