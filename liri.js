@@ -3,9 +3,9 @@ require("dotenv").config();
 var keys = require("./keys.js");
 var Twitter = require("twitter");
 var request = require("request");
-var inquirer = require("inquirer");
 var Spotify = require("node-spotify-api");
 var fs = require("fs");
+var inquirer = require("inquirer");
 
 var spotify = new Spotify(keys.spotify);
 var client = new Twitter(keys.twitter);
@@ -47,12 +47,13 @@ inquirer.prompt([{
 });
 
 function file() {
-    fs.readFile("./random.txt", "utf8", function (err, response) {
-        stringArr = response.split(",");
+
+    fs.readFile("./random.txt", "utf8", function (err, contents) {
+
+        stringArr = contents.split(",");
 
         arg1 = stringArr[0];
         arg2 = stringArr[1];
-
 
         switch (arg1) {
             case "spotify-this-song":
@@ -63,6 +64,7 @@ function file() {
                 movie();
                 break;
         }
+
     });
 }
 
@@ -94,7 +96,6 @@ function tweets() {
 }
 
 function spotifySong() {
-
     if (!arg2) {
         inquirer.prompt([{
             type: "input",
@@ -103,19 +104,90 @@ function spotifySong() {
         }]).then(function (song) {
             arg2 = song.song;
 
-            log();
-
             value = song.song;
+
+            //if no song display ace of base - the sign info
+            if (value === "") {
+                value = "the sign ace of base";
+            }
+
+            log();
+            songSearch();
+
         });
     } else {
         value = arg2;
+        log();
+        songSearch();
     }
+}
 
-    //if no song display ace of base - the sign info
-    if (value === "") {
-        value = "the sign ace of base";
+function movie() {
+
+    if (!arg2) {
+        inquirer.prompt([{
+            type: "input",
+            message: "Input movie title",
+            name: "movie"
+        }]).then(function (movie) {
+            arg2 = movie.movie;
+
+            value = movie.movie;
+
+            //if no movie display Mr. Nobody info
+            if (value === "") {
+                value = "Mr. Nobody";
+            }
+
+            log();
+            movieSearch();
+        });
+    } else {
+        value = arg2;
+        log();
+        movieSearch();
     }
+}
 
+function movieSearch() {
+    //code for displaying movie info
+    request.get("http://www.omdbapi.com/?apikey=" + omdb.apikey + "&t=" + value, function (error, response, body) {
+
+        var movieJSON = JSON.parse(body);
+
+        if (movieJSON.Error) {
+            console.log("please enter a valid movie");
+            arg2 = "";
+            movie();
+        } else {            
+
+            function printMovie() {
+                //show title, year, imdb rating, rotten tomatoes rating, country, language, plot, actors
+                var title = movieJSON.Title + "\n";
+                var year = movieJSON.Year + "\n";
+                var imdbRating = movieJSON.Ratings[0].Source + " " + movieJSON.Ratings[0].Value + "\n";
+                var rottenRating = movieJSON.Ratings[1].Source + " " + movieJSON.Ratings[1].Value + "\n";
+                var country = movieJSON.Country + "\n";
+                var language = movieJSON.Language + "\n";
+                var plot = movieJSON.Plot + "\n";
+                var actors = movieJSON.Actors + "\n";
+
+                return dashes + title + year + imdbRating + rottenRating + country + language + plot + actors;
+            }
+
+            console.log(printMovie());
+
+            fs.appendFile("log.txt", printMovie(), function (err) {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }
+    });
+
+}
+
+function songSearch() {
     //code for displaying spotify song search results
     spotify.search({
         type: 'track',
@@ -123,8 +195,10 @@ function spotifySong() {
         limit: "1"
     }, function (err, data) {
         if (err) {
-            return console.log('Error occurred: ' + err);
-        }
+            console.log("Please enter a valid song title");
+            arg2 = "";
+            spotifySong();
+        } else{
 
         //show artist, song name, link to spotify, album
         function printSongs() {
@@ -143,57 +217,7 @@ function spotifySong() {
                 console.log(err);
             }
         });
-    });
-}
-
-function movie() {
-
-    if (!arg2) {
-        inquirer.prompt([{
-            type: "input",
-            message: "Input movie title",
-            name: "movie"
-        }]).then(function (movie) {
-            arg2 = movie.movie;
-
-            log();
-
-            var value = movie.movie;
-        });
-    } else {
-        value = arg2;
     }
-    
-    //if no movie display Mr. Nobody info
-    if (value === "") {
-        value = "Mr. Nobody";
-    }
-
-    //code for displaying movie info
-    request.get("http://www.omdbapi.com/?apikey=" + omdb.apikey + "&t=" + value, function (error, response, body) {
-        var movieJSON = JSON.parse(body);
-
-        function printMovie() {
-            //show title, year, imdb rating, rotten tomatoes rating, country, language, plot, actors
-            var title = movieJSON.Title + "\n";
-            var year = movieJSON.Year + "\n";
-            var imdbRating = movieJSON.Ratings[0].Source + " " + movieJSON.Ratings[0].Value + "\n";
-            var rottenRating = movieJSON.Ratings[1].Source + " " + movieJSON.Ratings[1].Value + "\n";
-            var country = movieJSON.Country + "\n";
-            var language = movieJSON.Language + "\n";
-            var plot = movieJSON.Plot + "\n";
-            var actors = movieJSON.Actors + "\n";
-
-            return dashes + title + year + imdbRating + rottenRating + country + language + plot + actors;
-        }
-
-        console.log(printMovie());
-
-        fs.appendFile("log.txt", printMovie(), function (err) {
-            if (err) {
-                console.log(err);
-            }
-        });
     });
 }
 
