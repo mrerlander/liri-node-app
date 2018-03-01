@@ -25,6 +25,7 @@ inquirer.prompt([{
 }]).then(function (answer) {
 
     switch (answer.choice) {
+        
         case "Whatever's in the file":
             file();
             break;
@@ -36,12 +37,12 @@ inquirer.prompt([{
 
         case "Song info":
             arg1 = answer.choice;
-            spotifySong();
+            spotifyPrompt();
             break;
 
         case "Movie info":
             arg1 = answer.choice;
-            movie()
+            moviePrompt();
             break;
     }
 });
@@ -56,15 +57,15 @@ function file() {
         arg2 = stringArr[1];
 
         switch (arg1) {
+        
             case "spotify-this-song":
-                spotifySong();
+                spotifyPrompt();
                 break;
 
             case "movie-this":
-                movie();
+                moviePrompt();
                 break;
         }
-
     });
 }
 
@@ -95,7 +96,8 @@ function tweets() {
     });
 }
 
-function spotifySong() {
+function spotifyPrompt() {
+    
     if (!arg2) {
         inquirer.prompt([{
             type: "input",
@@ -122,7 +124,7 @@ function spotifySong() {
     }
 }
 
-function movie() {
+function moviePrompt() {
 
     if (!arg2) {
         inquirer.prompt([{
@@ -158,19 +160,20 @@ function movieSearch() {
         if (movieJSON.Error) {
             console.log("please enter a valid movie");
             arg2 = "";
-            movie();
-        } else {            
+            moviePrompt();
+        
+        } else {
 
             function printMovie() {
                 //show title, year, imdb rating, rotten tomatoes rating, country, language, plot, actors
-                var title = movieJSON.Title + "\n";
-                var year = movieJSON.Year + "\n";
+                var title = "Title: " + movieJSON.Title + "\n";
+                var year = "Year: " + movieJSON.Year + "\n";
                 var imdbRating = movieJSON.Ratings[0].Source + " " + movieJSON.Ratings[0].Value + "\n";
                 var rottenRating = movieJSON.Ratings[1].Source + " " + movieJSON.Ratings[1].Value + "\n";
-                var country = movieJSON.Country + "\n";
-                var language = movieJSON.Language + "\n";
-                var plot = movieJSON.Plot + "\n";
-                var actors = movieJSON.Actors + "\n";
+                var country = "Country: " + movieJSON.Country + "\n";
+                var language = "Language: " + movieJSON.Language + "\n";
+                var plot = "Plot: " + movieJSON.Plot + "\n";
+                var actors = "Actors: " + movieJSON.Actors + "\n";
 
                 return dashes + title + year + imdbRating + rottenRating + country + language + plot + actors;
             }
@@ -184,7 +187,6 @@ function movieSearch() {
             });
         }
     });
-
 }
 
 function songSearch() {
@@ -197,27 +199,27 @@ function songSearch() {
         if (err) {
             console.log("Please enter a valid song title");
             arg2 = "";
-            spotifySong();
-        } else{
+            spotifyPrompt();
+        } else {
 
-        //show artist, song name, link to spotify, album
-        function printSongs() {
-            var track = "Track: " + data.tracks.items[0].name + "\n";
-            var artist = "Artist: " + data.tracks.items[0].artists[0].name + "\n";
-            var album = "Album: " + data.tracks.items[0].album.name + "\n";
-            var link = "Link: " + data.tracks.items[0].external_urls.spotify + "\n";
+            //show artist, song name, link to spotify, album
+            function printSongs() {
+                var track = "Track: " + data.tracks.items[0].name + "\n";
+                var artist = "Artist: " + data.tracks.items[0].artists[0].name + "\n";
+                var album = "Album: " + data.tracks.items[0].album.name + "\n";
+                var link = "Link: " + data.tracks.items[0].external_urls.spotify + "\n";
 
-            return dashes + track + artist + album + link;
-        }
-
-        console.log(printSongs());
-
-        fs.appendFile("log.txt", printSongs(), function (err) {
-            if (err) {
-                console.log(err);
+                return dashes + track + artist + album + link;
             }
-        });
-    }
+
+            console.log(printSongs());
+
+            fs.appendFile("log.txt", printSongs(), function (err) {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }
     });
 }
 
