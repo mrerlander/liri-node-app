@@ -17,35 +17,50 @@ var stringArr = [];
 var value;
 var dashes = "------------------ \n";
 
-inquirer.prompt([{
-    type: "list",
-    message: "What would you like to get?",
-    choices: ["Tweets", "Song info", "Movie info", "Whatever's in the file"],
-    name: "choice"
-}]).then(function (answer) {
+function initialQuestion() {
+    inquirer.prompt([{
+        type: "list",
+        message: "What would you like to get?",
+        choices: ["Tweets", "Song info", "Movie info", "Whatever's in the file"],
+        name: "choice"
+    }]).then(function (answer) {
 
-    switch (answer.choice) {
-        
-        case "Whatever's in the file":
-            file();
-            break;
+        switch (answer.choice) {
 
-        case "Tweets":
-            arg1 = answer.choice;
-            tweets();
-            break;
+            case "Whatever's in the file":
+                file();
+                break;
 
-        case "Song info":
-            arg1 = answer.choice;
-            spotifyPrompt();
-            break;
+            case "Tweets":
+                arg1 = answer.choice;
+                tweets();
+                break;
 
-        case "Movie info":
-            arg1 = answer.choice;
-            moviePrompt();
-            break;
-    }
-});
+            case "Song info":
+                arg1 = answer.choice;
+                spotifyPrompt();
+                break;
+
+            case "Movie info":
+                arg1 = answer.choice;
+                moviePrompt();
+                break;
+        }
+    });
+}
+
+function anythingElse() {
+    inquirer.prompt([{
+        type: "confirm",
+        message: "Anything else?",
+        name: "continue",
+        default: true
+    }]).then(function (answer) {
+        if (answer.continue === true) {
+            initialQuestion();
+        }
+    });
+}
 
 function file() {
 
@@ -57,7 +72,7 @@ function file() {
         arg2 = stringArr[1];
 
         switch (arg1) {
-        
+
             case "spotify-this-song":
                 spotifyPrompt();
                 break;
@@ -93,11 +108,13 @@ function tweets() {
                 console.log(err);
             }
         });
+        anythingElse();
     });
+
 }
 
 function spotifyPrompt() {
-    
+
     if (!arg2) {
         inquirer.prompt([{
             type: "input",
@@ -161,7 +178,7 @@ function movieSearch() {
             console.log("please enter a valid movie");
             arg2 = "";
             moviePrompt();
-        
+
         } else {
 
             function printMovie() {
@@ -186,6 +203,7 @@ function movieSearch() {
                 }
             });
         }
+        anythingElse();
     });
 }
 
@@ -220,6 +238,7 @@ function songSearch() {
                 }
             });
         }
+        anythingElse();
     });
 }
 
@@ -230,3 +249,5 @@ function log() {
         }
     });
 }
+
+initialQuestion();
